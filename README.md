@@ -32,3 +32,7 @@ To run the project locally, follow these steps:
 - Install [Mockery](https://github.com/vektra/mockery)
 - Add the following code in the service file: `//go:generate mockery --all --case snake --output ./mocks --exported`
 - Run go generate using `make generate`
+
+### URL Demo
+
+For a demo link of this project [here](https://caa-test.fly.dev/)

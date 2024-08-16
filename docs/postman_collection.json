@@ -1,0 +1,505 @@
+{
+    "info": {
+        "_postman_id": "e8cbb083-247d-4f4a-aef5-f77fe9f87a19",
+        "name": "Caa Test",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_exporter_id": "8376320"
+    },
+    "item": [
+        {
+            "name": "Update Max Customer",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"max_customer\": 2\r\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/v1/update-max-customer",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "update-max-customer"
+                    ]
+                }
+            },
+            "response": [
+                {
+                    "name": "Success",
+                    "originalRequest": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"max_customer\": 2\r\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/update-max-customer",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "update-max-customer"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-type",
+                            "value": "application/json"
+                        },
+                        {
+                            "key": "date",
+                            "value": "Fri, 16 Aug 2024 15:39:24 GMT"
+                        },
+                        {
+                            "key": "content-encoding",
+                            "value": "br"
+                        },
+                        {
+                            "key": "transfer-encoding",
+                            "value": "chunked"
+                        },
+                        {
+                            "key": "server",
+                            "value": "Fly/f8a8cc0dd (2024-08-15)"
+                        },
+                        {
+                            "key": "via",
+                            "value": "1.1 fly.io"
+                        },
+                        {
+                            "key": "fly-request-id",
+                            "value": "01J5DXFW633HM9XN607AN8BD6A-sin"
+                        }
+                    ],
+                    "cookie": [],
+                    "body": "{\n    \"message\": \"Succesfully update max customer\"\n}"
+                }
+            ]
+        },
+        {
+            "name": "Health Check",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}",
+                    "host": [
+                        "{{base_url}}"
+                    ]
+                }
+            },
+            "response": [
+                {
+                    "name": "Success",
+                    "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-type",
+                            "value": "application/json"
+                        },
+                        {
+                            "key": "date",
+                            "value": "Fri, 16 Aug 2024 15:40:39 GMT"
+                        },
+                        {
+                            "key": "content-encoding",
+                            "value": "br"
+                        },
+                        {
+                            "key": "transfer-encoding",
+                            "value": "chunked"
+                        },
+                        {
+                            "key": "server",
+                            "value": "Fly/f8a8cc0dd (2024-08-15)"
+                        },
+                        {
+                            "key": "via",
+                            "value": "1.1 fly.io"
+                        },
+                        {
+                            "key": "fly-request-id",
+                            "value": "01J5DXJ5WF0JNFH1RJAYSYQKNN-sin"
+                        }
+                    ],
+                    "cookie": [],
+                    "body": "{\n    \"message\": \"Service Running\"\n}"
+                }
+            ]
+        },
+        {
+            "name": "First Customer Room",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/api/v1/first_room",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "first_room"
+                    ]
+                }
+            },
+            "response": [
+                {
+                    "name": "Success",
+                    "originalRequest": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/first_room",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "first_room"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-type",
+                            "value": "application/json"
+                        },
+                        {
+                            "key": "date",
+                            "value": "Fri, 16 Aug 2024 15:41:17 GMT"
+                        },
+                        {
+                            "key": "content-encoding",
+                            "value": "br"
+                        },
+                        {
+                            "key": "transfer-encoding",
+                            "value": "chunked"
+                        },
+                        {
+                            "key": "server",
+                            "value": "Fly/f8a8cc0dd (2024-08-15)"
+                        },
+                        {
+                            "key": "via",
+                            "value": "1.1 fly.io"
+                        },
+                        {
+                            "key": "fly-request-id",
+                            "value": "01J5DXKAAB6N2YYQDAHZCEWTJ4-sin"
+                        }
+                    ],
+                    "cookie": [],
+                    "body": "{\n    \"message\": \"Succesfully get data first room\",\n    \"data\": {\n        \"room_id\": {\n            \"id\": \"112832341\",\n            \"channel_id\": 125888,\n            \"source\": \"qiscus\"\n        }\n    }\n}"
+                }
+            ]
+        },
+        {
+            "name": "Webhook Mark Resolved",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"customer\": {\r\n        \"additional_info\": [],\r\n        \"avatar\": \"https://omnichannel.qiscus.com/img/ic_qiscus_client.png\",\r\n        \"name\": \"test\",\r\n        \"user_id\": \"test@cx.co\"\r\n    },\r\n    \"resolved_by\": {\r\n        \"email\": \"qiscus_72350_kaqiscus@gmail.com\",\r\n        \"id\": 4705,\r\n        \"is_available\": false,\r\n        \"name\": \"Qiscus Integration\",\r\n        \"type\": \"admin\"\r\n    },\r\n    \"service\": {\r\n        \"first_comment_id\": \"2290689623\",\r\n        \"id\": 105984645,\r\n        \"is_resolved\": true,\r\n        \"last_comment_id\": \"2290701718\",\r\n        \"notes\": null,\r\n        \"room_id\": \"249273853\",\r\n        \"source\": \"qiscus\"\r\n    }\r\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/v1/mark_as_resolved",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "mark_as_resolved"
+                    ]
+                }
+            },
+            "response": [
+                {
+                    "name": "Success",
+                    "originalRequest": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"customer\": {\r\n        \"additional_info\": [],\r\n        \"avatar\": \"https://omnichannel.qiscus.com/img/ic_qiscus_client.png\",\r\n        \"name\": \"test\",\r\n        \"user_id\": \"test@cx.co\"\r\n    },\r\n    \"resolved_by\": {\r\n        \"email\": \"qiscus_72350_kaqiscus@gmail.com\",\r\n        \"id\": 4705,\r\n        \"is_available\": false,\r\n        \"name\": \"Qiscus Integration\",\r\n        \"type\": \"admin\"\r\n    },\r\n    \"service\": {\r\n        \"first_comment_id\": \"2290689623\",\r\n        \"id\": 105984645,\r\n        \"is_resolved\": true,\r\n        \"last_comment_id\": \"2290701718\",\r\n        \"notes\": null,\r\n        \"room_id\": \"249273853\",\r\n        \"source\": \"qiscus\"\r\n    }\r\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/mark_as_resolved",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "mark_as_resolved"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-type",
+                            "value": "application/json"
+                        },
+                        {
+                            "key": "date",
+                            "value": "Fri, 16 Aug 2024 15:39:08 GMT"
+                        },
+                        {
+                            "key": "content-encoding",
+                            "value": "br"
+                        },
+                        {
+                            "key": "transfer-encoding",
+                            "value": "chunked"
+                        },
+                        {
+                            "key": "server",
+                            "value": "Fly/f8a8cc0dd (2024-08-15)"
+                        },
+                        {
+                            "key": "via",
+                            "value": "1.1 fly.io"
+                        },
+                        {
+                            "key": "fly-request-id",
+                            "value": "01J5DXFCPBBV5EENJTMD3RMHEB-sin"
+                        }
+                    ],
+                    "cookie": [],
+                    "body": "\"ok\""
+                }
+            ]
+        },
+        {
+            "name": "Webhook Caa",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"customer\": {\r\n        \"additional_info\": [],\r\n        \"avatar\": \"https://omnichannel.qiscus.com/img/ic_qiscus_client.png\",\r\n        \"name\": \"test\",\r\n        \"user_id\": \"test@cx.co\"\r\n    },\r\n    \"resolved_by\": {\r\n        \"email\": \"qiscus_72350_kaqiscus@gmail.com\",\r\n        \"id\": 4705,\r\n        \"is_available\": false,\r\n        \"name\": \"Qiscus Integration\",\r\n        \"type\": \"admin\"\r\n    },\r\n    \"service\": {\r\n        \"first_comment_id\": \"2290689623\",\r\n        \"id\": 105984645,\r\n        \"is_resolved\": true,\r\n        \"last_comment_id\": \"2290701718\",\r\n        \"notes\": null,\r\n        \"room_id\": \"249273853\",\r\n        \"source\": \"qiscus\"\r\n    }\r\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/v1/caa",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "caa"
+                    ]
+                }
+            },
+            "response": [
+                {
+                    "name": "Success",
+                    "originalRequest": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"customer\": {\r\n        \"additional_info\": [],\r\n        \"avatar\": \"https://omnichannel.qiscus.com/img/ic_qiscus_client.png\",\r\n        \"name\": \"test\",\r\n        \"user_id\": \"test@cx.co\"\r\n    },\r\n    \"resolved_by\": {\r\n        \"email\": \"qiscus_72350_kaqiscus@gmail.com\",\r\n        \"id\": 4705,\r\n        \"is_available\": false,\r\n        \"name\": \"Qiscus Integration\",\r\n        \"type\": \"admin\"\r\n    },\r\n    \"service\": {\r\n        \"first_comment_id\": \"2290689623\",\r\n        \"id\": 105984645,\r\n        \"is_resolved\": true,\r\n        \"last_comment_id\": \"2290701718\",\r\n        \"notes\": null,\r\n        \"room_id\": \"249273853\",\r\n        \"source\": \"qiscus\"\r\n    }\r\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/mark_as_resolved",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "mark_as_resolved"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-type",
+                            "value": "application/json"
+                        },
+                        {
+                            "key": "date",
+                            "value": "Fri, 16 Aug 2024 15:39:08 GMT"
+                        },
+                        {
+                            "key": "content-encoding",
+                            "value": "br"
+                        },
+                        {
+                            "key": "transfer-encoding",
+                            "value": "chunked"
+                        },
+                        {
+                            "key": "server",
+                            "value": "Fly/f8a8cc0dd (2024-08-15)"
+                        },
+                        {
+                            "key": "via",
+                            "value": "1.1 fly.io"
+                        },
+                        {
+                            "key": "fly-request-id",
+                            "value": "01J5DXFCPBBV5EENJTMD3RMHEB-sin"
+                        }
+                    ],
+                    "cookie": [],
+                    "body": "\"ok\""
+                },
+                {
+                    "name": "Error",
+                    "originalRequest": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"app_id\": \"karm-gzu41e4e4dv9fu3f\",\r\n    \"avatar_url\": \"https://omnichannel.qiscus.com/img/ic_qiscus_client.png\",\r\n    \"candidate_agent\": {\r\n        \"avatar_url\": null,\r\n        \"created_at\": \"2022-10-19T04:54:50Z\",\r\n        \"email\": \"nurcholis@qiscus.com\",\r\n        \"force_offline\": false,\r\n        \"id\": 158048,\r\n        \"is_available\": true,\r\n        \"is_verified\": false,\r\n        \"last_login\": \"2024-07-19T02:00:53Z\",\r\n        \"name\": \"cholis\",\r\n        \"sdk_email\": \"sRfsv_nurcholis@qiscus.com\",\r\n        \"sdk_key\": \"6a-a0b8-d538aa73\",\r\n        \"type\": 2,\r\n        \"type_as_string\": \"agent\",\r\n        \"updated_at\": \"2024-07-19T02:06:07Z\"\r\n    },\r\n    \"email\": \"test@cx.co\",\r\n    \"extras\": \"{\\\"additional_extras\\\":{\\\"timezone_offset\\\":7},\\\"notes\\\":null,\\\"timezone_offset\\\":null,\\\"user_properties\\\":[]}\",\r\n    \"is_new_session\": true,\r\n    \"is_resolved\": false,\r\n    \"latest_service\": null,\r\n    \"name\": \"test\",\r\n    \"room_id\": \"249433508\",\r\n    \"source\": \"qiscus\"\r\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/caa",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "caa"
+                            ]
+                        }
+                    },
+                    "status": "Internal Server Error",
+                    "code": 500,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "access-control-allow-origin",
+                            "value": "*"
+                        },
+                        {
+                            "key": "content-type",
+                            "value": "application/json"
+                        },
+                        {
+                            "key": "date",
+                            "value": "Fri, 16 Aug 2024 15:45:21 GMT"
+                        },
+                        {
+                            "key": "content-encoding",
+                            "value": "br"
+                        },
+                        {
+                            "key": "transfer-encoding",
+                            "value": "chunked"
+                        },
+                        {
+                            "key": "server",
+                            "value": "Fly/f8a8cc0dd (2024-08-15)"
+                        },
+                        {
+                            "key": "via",
+                            "value": "1.1 fly.io"
+                        },
+                        {
+                            "key": "fly-request-id",
+                            "value": "01J5DXTKNKACKJ8NREWXBP1QR0-sin"
+                        }
+                    ],
+                    "cookie": [],
+                    "body": "{\n    \"code\": 500,\n    \"message\": \"Something went wrong\"\n}"
+                }
+            ]
+        }
+    ]
+}

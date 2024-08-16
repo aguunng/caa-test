@@ -17,40 +17,6 @@ func Load() *Config {
 	return &c
 }
 
-type AppConfig struct {
-	MaxCustomer int `json:"max_customer"`
-}
-
-type Config struct {
-	App      App
-	Database Database
-	Qiscus   Qiscus
-}
-
-type App struct {
-	SecretKey string `env:"APP_SECRET_KEY"`
-}
-
-type Database struct {
-	Host     string `env:"DATABASE_HOST"`
-	Port     int    `env:"DATABASE_PORT"`
-	User     string `env:"DATABASE_USER"`
-	Password string `env:"DATABASE_PASSWORD"`
-	Name     string `env:"DATABASE_NAME"`
-}
-
-type Qiscus struct {
-	AppID       string `env:"QISCUS_APP_ID"`
-	SecretKey   string `env:"QISCUS_SECRET_KEY"`
-	Omnichannel Omnichannel
-}
-
-type Omnichannel struct {
-	URL string `env:"QISCUS_OMNICHANNEL_URL"`
-}
-
-const configFile = "config.json"
-
 func ReadConfig() (*AppConfig, error) {
     file, err := os.Open(configFile)
     if err != nil {
@@ -79,3 +45,29 @@ func WriteConfig(config *AppConfig) error {
     encoder.SetIndent("", "  ")
     return encoder.Encode(config)
 }
+
+type Config struct {
+	App      App
+	Qiscus   Qiscus
+}
+
+type App struct {
+	SecretKey string `env:"APP_SECRET_KEY"`
+}
+
+type Qiscus struct {
+	AppID       string `env:"QISCUS_APP_ID"`
+	SecretKey   string `env:"QISCUS_SECRET_KEY"`
+	Omnichannel Omnichannel
+}
+
+type Omnichannel struct {
+	URL string `env:"QISCUS_OMNICHANNEL_URL"`
+}
+
+const configFile = "config.json"
+
+type AppConfig struct {
+	MaxCustomer int `json:"max_customer"`
+}
+

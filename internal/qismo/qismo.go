@@ -10,7 +10,6 @@ import (
 
 	"caa-test/internal/qismo/request"
 	"caa-test/internal/qismo/response"
-	"github.com/rs/zerolog/log"
 )
 
 type Qismo struct {
@@ -107,15 +106,8 @@ func (q *Qismo) AgentDetail(ctx context.Context, agentId string) (*response.Agen
 }
 
 func (q *Qismo) AssignChannelToAgent(ctx context.Context, agentId string, request request.AgentUpdatedRequest) error {
-	l := log.Ctx(ctx).
-		With().
-		Str("func", "room.Service.AvailableAgentIds").
-		Logger()
 	url := fmt.Sprintf("%s/api/v2/admin/agent/%s/update", q.url, agentId)
-
 	payload, _ := json.Marshal(request)
-
-	l.Info().Msgf("Print request: %s", payload)
 
 	var response response.AgentDetailResponse
 

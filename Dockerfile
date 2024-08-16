@@ -1,10 +1,12 @@
-FROM golang:1.22 as builder
+FROM golang:1.23 as builder
 WORKDIR /app
 COPY . .
 RUN CGO_ENABLED=0 go build -o binary main.go
 
 FROM alpine:3
 RUN apk update && apk add --no-cache ca-certificates tzdata && update-ca-certificates
-COPY --from=builder /app/binary .
 
-EXPOSE 8080
+COPY --from=builder /app/binary .
+COPY --from=builder /app/config.json .
+
+CMD ["./binary", "api"]
