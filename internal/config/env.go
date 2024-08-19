@@ -18,37 +18,37 @@ func Load() *Config {
 }
 
 func ReadConfig() (*AppConfig, error) {
-    file, err := os.Open(configFile)
-    if err != nil {
-        return nil, err
-    }
-    defer file.Close()
+	file, err := os.Open(configFile)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
 
-    var config AppConfig
-    decoder := json.NewDecoder(file)
-    err = decoder.Decode(&config)
-    if err != nil {
-        return nil, err
-    }
+	var config AppConfig
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&config)
+	if err != nil {
+		return nil, err
+	}
 
-    return &config, nil
+	return &config, nil
 }
 
 func WriteConfig(config *AppConfig) error {
-    file, err := os.Create(configFile)
-    if err != nil {
-        return err
-    }
-    defer file.Close()
+	file, err := os.Create(configFile)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-    encoder := json.NewEncoder(file)
-    encoder.SetIndent("", "  ")
-    return encoder.Encode(config)
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(config)
 }
 
 type Config struct {
-	App      App
-	Qiscus   Qiscus
+	App    App
+	Qiscus Qiscus
 }
 
 type App struct {
@@ -70,4 +70,3 @@ const configFile = "config.json"
 type AppConfig struct {
 	MaxCustomer int `json:"max_customer"`
 }
-

@@ -19,8 +19,8 @@ type DataPaginate struct {
 }
 
 type HTTPSuccess struct {
-	Message string `json:"message"`
-	Data interface{} `json:"data,omitempty"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 type HTTPError struct {

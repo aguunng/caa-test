@@ -1,10 +1,10 @@
 package room
 
 import (
-	"encoding/json"
 	"caa-test/internal/api/resp"
 	"caa-test/internal/config"
 	"caa-test/internal/qismo/request"
+	"encoding/json"
 	"net/http"
 	neturl "net/url"
 
@@ -119,10 +119,10 @@ func (h *httpHandler) UpdateMaxCustomerHandler(w http.ResponseWriter, r *http.Re
 	appConfig.MaxCustomer = requestPayload.MaxCustomer
 
 	if err := config.WriteConfig(appConfig); err != nil {
-        log.Error().Msgf("failed to write config: %s", err.Error())
-        http.Error(w, "failed to write config", http.StatusInternalServerError)
-        return
-    }
+		log.Error().Msgf("failed to write config: %s", err.Error())
+		http.Error(w, "failed to write config", http.StatusInternalServerError)
+		return
+	}
 
 	resp.WriteJSON(w, http.StatusOK, resp.HTTPSuccess{
 		Message: "Succesfully update max customer",
