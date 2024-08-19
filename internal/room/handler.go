@@ -36,7 +36,7 @@ func (h *httpHandler) WebhookCaa(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.svc.AssignAgent(ctx, &req); err != nil {
-		log.Ctx(ctx).Error().Msgf("failed assign agent to room: %s", err.Error())
+		log.Ctx(ctx).Error().Msgf("failed assign agent to room : %s", err.Error())
 		resp.WriteJSONFromError(w, err)
 		return
 	}
@@ -59,7 +59,7 @@ func (h *httpHandler) WebhookMarkResolved(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := h.svc.AssignAgent(ctx, nil); err != nil {
-		log.Ctx(ctx).Error().Msgf("failed assign agent to room: %s", err.Error())
+		log.Ctx(ctx).Error().Msgf("failed assign agent to room : %s", err.Error())
 		resp.WriteJSONFromError(w, err)
 		return
 	}

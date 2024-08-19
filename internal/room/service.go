@@ -111,9 +111,15 @@ func (s *Service) AvailableAgentIds(ctx context.Context, room *entity.Room) (int
 
 	agentId := FilterAgentsAvailableAssign(agents, appConfig)
 
+	if agentId == 0 {
+		msg := fmt.Sprintf("Agent not available with handle current %d max customer", appConfig.MaxCustomer)
+		l.Error().Msg(msg)
+		return 0, &roomError{agentNotFound, msg}
+	}
+
 	agentDetail, err := s.omni.AgentDetail(ctx, strconv.Itoa(agentId))
 	if err != nil {
-		l.Error().Msgf("unable ge agent detail : %s", err.Error())
+		l.Error().Msgf("unable get agent detail : %s", err.Error())
 		return 0, err
 	}
 
