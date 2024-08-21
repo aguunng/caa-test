@@ -1,0 +1,325 @@
+basePath: /api/v1
+definitions:
+  entity.Config:
+    properties:
+      max_customer:
+        type: integer
+    type: object
+  request.WebhookCaaRequest:
+    properties:
+      app_id:
+        type: string
+      avatar_url:
+        type: string
+      candidate_agent:
+        properties:
+          avatar_url: {}
+          created_at:
+            type: string
+          email:
+            type: string
+          force_offline:
+            type: boolean
+          id:
+            type: integer
+          is_available:
+            type: boolean
+          is_verified:
+            type: boolean
+          last_login:
+            type: string
+          name:
+            type: string
+          sdk_email:
+            type: string
+          sdk_key:
+            type: string
+          type:
+            type: integer
+          type_as_string:
+            type: string
+          updated_at:
+            type: string
+        type: object
+      email:
+        type: string
+      extras:
+        type: string
+      is_new_session:
+        type: boolean
+      is_resolved:
+        type: boolean
+      latest_service: {}
+      name:
+        type: string
+      room_id:
+        type: string
+      source:
+        type: string
+    type: object
+  request.WebhookMarkResolvedRequest:
+    properties:
+      customer:
+        properties:
+          additional_info:
+            items: {}
+            type: array
+          avatar:
+            type: string
+          name:
+            type: string
+          user_id:
+            type: string
+        type: object
+      resolved_by:
+        properties:
+          email:
+            type: string
+          id:
+            type: integer
+          is_available:
+            type: boolean
+          name:
+            type: string
+          type:
+            type: string
+        type: object
+      service:
+        properties:
+          first_comment_id:
+            type: string
+          id:
+            type: integer
+          is_resolved:
+            type: boolean
+          last_comment_id:
+            type: string
+          notes: {}
+          room_id:
+            type: string
+          source:
+            type: string
+        type: object
+    type: object
+  resp.HTTPError:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  resp.HTTPSuccess:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  response.CustomerRoom:
+    properties:
+      channel_id:
+        type: integer
+      contact_id:
+        type: integer
+      id:
+        type: integer
+      is_handled_by_bot:
+        type: boolean
+      is_resolved:
+        type: boolean
+      is_waiting:
+        type: boolean
+      last_comment_sender:
+        type: string
+      last_comment_sender_type:
+        type: string
+      last_comment_text:
+        type: string
+      last_comment_timestamp:
+        type: string
+      last_customer_comment_text:
+        type: string
+      last_customer_timestamp:
+        type: string
+      name:
+        type: string
+      room_badge: {}
+      room_id:
+        type: string
+      room_type:
+        type: string
+      source:
+        type: string
+      user_avatar_url:
+        type: string
+      user_id:
+        type: string
+    type: object
+  response.RoomsResponse:
+    properties:
+      data:
+        properties:
+          customer_rooms:
+            items:
+              $ref: '#/definitions/response.CustomerRoom'
+            type: array
+        type: object
+      meta:
+        properties:
+          current_total:
+            type: integer
+          cursor_after:
+            type: string
+          cursor_before:
+            type: string
+        type: object
+      status:
+        type: integer
+    type: object
+externalDocs:
+  description: OpenAPI Specification
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://example.com/support
+  description: This API provides endpoints for managing customer rooms, handling webhooks,
+    and configuring application settings.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://example.com/terms/
+  title: Customer Service API
+  version: "1.0"
+paths:
+  /config/max-customer:
+    put:
+      consumes:
+      - application/json
+      description: Updates the maximum number of customers allowed in the configuration.
+      parameters:
+      - description: Payload to update max customer
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Config'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated max customer
+          schema:
+            $ref: '#/definitions/resp.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+      summary: Update Maximum Customer Limit
+      tags:
+      - configuration
+  /rooms:
+    get:
+      description: Retrieves the list of available customer rooms.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved list of rooms
+          schema:
+            $ref: '#/definitions/response.RoomsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+      summary: Get Customer Rooms
+      tags:
+      - rooms
+  /rooms/first:
+    get:
+      description: Retrieves the ID of the first unserved customer room.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved the first unserved room ID
+          schema:
+            $ref: '#/definitions/resp.HTTPSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+      summary: Get First Unserved Room ID
+      tags:
+      - rooms
+  /webhook/caa:
+    post:
+      consumes:
+      - application/json
+      description: Handles the CAA webhook request with data received from the request
+        body.
+      parameters:
+      - description: Request body for CAA webhook
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.WebhookCaaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully caa webhook
+          schema:
+            $ref: '#/definitions/resp.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+      summary: Webhook CAA
+      tags:
+      - webhook
+  /webhook/mark-resolved:
+    post:
+      consumes:
+      - application/json
+      description: Marks the webhook as resolved by processing the data provided in
+        the request body and assigning an agent.
+      parameters:
+      - description: Request body to mark the webhook as resolved
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.WebhookMarkResolvedRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully marked the webhook as resolved
+          schema:
+            $ref: '#/definitions/resp.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+      summary: Mark Webhook as Resolved
+      tags:
+      - webhook
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

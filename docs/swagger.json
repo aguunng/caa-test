@@ -1,0 +1,489 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This API provides endpoints for managing customer rooms, handling webhooks, and configuring application settings.",
+        "title": "Customer Service API",
+        "termsOfService": "http://example.com/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://example.com/support",
+            "email": "support@example.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/config/max-customer": {
+            "put": {
+                "description": "Updates the maximum number of customers allowed in the configuration.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "configuration"
+                ],
+                "summary": "Update Maximum Customer Limit",
+                "parameters": [
+                    {
+                        "description": "Payload to update max customer",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Config"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated max customer",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms": {
+            "get": {
+                "description": "Retrieves the list of available customer rooms.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rooms"
+                ],
+                "summary": "Get Customer Rooms",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved list of rooms",
+                        "schema": {
+                            "$ref": "#/definitions/response.RoomsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/first": {
+            "get": {
+                "description": "Retrieves the ID of the first unserved customer room.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rooms"
+                ],
+                "summary": "Get First Unserved Room ID",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the first unserved room ID",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/webhook/caa": {
+            "post": {
+                "description": "Handles the CAA webhook request with data received from the request body.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webhook"
+                ],
+                "summary": "Webhook CAA",
+                "parameters": [
+                    {
+                        "description": "Request body for CAA webhook",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.WebhookCaaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully caa webhook",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/webhook/mark-resolved": {
+            "post": {
+                "description": "Marks the webhook as resolved by processing the data provided in the request body and assigning an agent.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webhook"
+                ],
+                "summary": "Mark Webhook as Resolved",
+                "parameters": [
+                    {
+                        "description": "Request body to mark the webhook as resolved",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.WebhookMarkResolvedRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully marked the webhook as resolved",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "entity.Config": {
+            "type": "object",
+            "properties": {
+                "max_customer": {
+                    "type": "integer"
+                }
+            }
+        },
+        "request.WebhookCaaRequest": {
+            "type": "object",
+            "properties": {
+                "app_id": {
+                    "type": "string"
+                },
+                "avatar_url": {
+                    "type": "string"
+                },
+                "candidate_agent": {
+                    "type": "object",
+                    "properties": {
+                        "avatar_url": {},
+                        "created_at": {
+                            "type": "string"
+                        },
+                        "email": {
+                            "type": "string"
+                        },
+                        "force_offline": {
+                            "type": "boolean"
+                        },
+                        "id": {
+                            "type": "integer"
+                        },
+                        "is_available": {
+                            "type": "boolean"
+                        },
+                        "is_verified": {
+                            "type": "boolean"
+                        },
+                        "last_login": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "sdk_email": {
+                            "type": "string"
+                        },
+                        "sdk_key": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "integer"
+                        },
+                        "type_as_string": {
+                            "type": "string"
+                        },
+                        "updated_at": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "email": {
+                    "type": "string"
+                },
+                "extras": {
+                    "type": "string"
+                },
+                "is_new_session": {
+                    "type": "boolean"
+                },
+                "is_resolved": {
+                    "type": "boolean"
+                },
+                "latest_service": {},
+                "name": {
+                    "type": "string"
+                },
+                "room_id": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.WebhookMarkResolvedRequest": {
+            "type": "object",
+            "properties": {
+                "customer": {
+                    "type": "object",
+                    "properties": {
+                        "additional_info": {
+                            "type": "array",
+                            "items": {}
+                        },
+                        "avatar": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "user_id": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "resolved_by": {
+                    "type": "object",
+                    "properties": {
+                        "email": {
+                            "type": "string"
+                        },
+                        "id": {
+                            "type": "integer"
+                        },
+                        "is_available": {
+                            "type": "boolean"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "service": {
+                    "type": "object",
+                    "properties": {
+                        "first_comment_id": {
+                            "type": "string"
+                        },
+                        "id": {
+                            "type": "integer"
+                        },
+                        "is_resolved": {
+                            "type": "boolean"
+                        },
+                        "last_comment_id": {
+                            "type": "string"
+                        },
+                        "notes": {},
+                        "room_id": {
+                            "type": "string"
+                        },
+                        "source": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "resp.HTTPError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "resp.HTTPSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.CustomerRoom": {
+            "type": "object",
+            "properties": {
+                "channel_id": {
+                    "type": "integer"
+                },
+                "contact_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_handled_by_bot": {
+                    "type": "boolean"
+                },
+                "is_resolved": {
+                    "type": "boolean"
+                },
+                "is_waiting": {
+                    "type": "boolean"
+                },
+                "last_comment_sender": {
+                    "type": "string"
+                },
+                "last_comment_sender_type": {
+                    "type": "string"
+                },
+                "last_comment_text": {
+                    "type": "string"
+                },
+                "last_comment_timestamp": {
+                    "type": "string"
+                },
+                "last_customer_comment_text": {
+                    "type": "string"
+                },
+                "last_customer_timestamp": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "room_badge": {},
+                "room_id": {
+                    "type": "string"
+                },
+                "room_type": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "user_avatar_url": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.RoomsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "customer_rooms": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.CustomerRoom"
+                            }
+                        }
+                    }
+                },
+                "meta": {
+                    "type": "object",
+                    "properties": {
+                        "current_total": {
+                            "type": "integer"
+                        },
+                        "cursor_after": {
+                            "type": "string"
+                        },
+                        "cursor_before": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAPI Specification",
+        "url": "https://swagger.io/resources/open-api/"
+    }
+}

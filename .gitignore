@@ -22,3 +22,5 @@ docker-compose.yaml
 # Logging
 logs/
 .github/workflows/fly-deploy.yml
+sonar-project.properties
+.scannerwork/

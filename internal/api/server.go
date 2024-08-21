@@ -14,7 +14,9 @@ import (
 	"syscall"
 	"time"
 
+	_ "caa-test/docs"
 	"github.com/rs/zerolog/log"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 func NewServer() *Server {
@@ -41,6 +43,7 @@ func NewServer() *Server {
 		})
 	}))
 
+	r.Handle("GET /swagger/", httpSwagger.Handler())
 	r.Handle("POST /api/v1/caa", http.HandlerFunc(roomHandler.WebhookCaa))
 	r.Handle("POST /api/v1/mark_as_resolved", http.HandlerFunc(roomHandler.WebhookMarkResolved))
 	r.Handle("GET /api/v1/rooms", http.HandlerFunc(roomHandler.GetRooms))
