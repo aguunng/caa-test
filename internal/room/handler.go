@@ -6,9 +6,12 @@ import (
 	"caa-test/internal/entity"
 	"caa-test/internal/qismo/request"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	neturl "net/url"
+	"reflect"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 )
 
@@ -31,7 +34,7 @@ func NewHttpHandler(svc *Service) *httpHandler {
 // @Success 200  {object}  resp.HTTPSuccess  "Successfully caa webhook"
 // @Failure 400  {object}  resp.HTTPError  "Bad Request"
 // @Failure 500  {object}  resp.HTTPError  "Internal Server Error"
-// @Router /webhook/caa [post]
+// @Router /caa [post]
 func (h *httpHandler) WebhookCaa(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -66,7 +69,7 @@ func (h *httpHandler) WebhookCaa(w http.ResponseWriter, r *http.Request) {
 // @Success 200  {object}  resp.HTTPSuccess  "Successfully marked the webhook as resolved"
 // @Failure 400  {object}  resp.HTTPError  "Bad Request"
 // @Failure 500  {object}  resp.HTTPError  "Internal Server Error"
-// @Router /webhook/mark-resolved [post]
+// @Router /mark_as_resolved [post]
 func (h *httpHandler) WebhookMarkResolved(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -118,7 +121,7 @@ func (h *httpHandler) GetRooms(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Success 200  {object}  resp.HTTPSuccess  "Successfully retrieved the first unserved room ID"
 // @Failure 500  {object}  resp.HTTPError  "Internal Server Error"
-// @Router /rooms/first [get]
+// @Router /first_room [get]
 func (h *httpHandler) FirstCustomerRoom(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -144,16 +147,29 @@ func (h *httpHandler) FirstCustomerRoom(w http.ResponseWriter, r *http.Request) 
 // @Produce  json
 // @Param   data  body   entity.Config  true  "Payload to update max customer"
 // @Success 200  {object}  resp.HTTPSuccess  "Successfully updated max customer"
-// @Failure 400  {string}  string  "Bad Request"
+// @Failure 400  {object}  resp.HTTPError  "Bad Request"
 // @Failure 500  {object}  resp.HTTPError  "Internal Server Error"
-// @Router /config/max-customer [put]
+// @Router /update-max-customer [post]
 func (h *httpHandler) UpdateMaxCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var req entity.Config
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		resp.WriteJSON(w, http.StatusBadRequest, resp.HTTPError{
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+		})
+		return
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(req); err != nil {
+		errorResponse := resp.ValidationErrorResponse{
+			StatusCode: http.StatusBadRequest,
+			Errors:     formatValidationError(err, req),
+		}
+		resp.WriteJSON(w, http.StatusBadRequest, errorResponse)
 		return
 	}
 
@@ -175,4 +191,52 @@ func (h *httpHandler) UpdateMaxCustomerHandler(w http.ResponseWriter, r *http.Re
 	resp.WriteJSON(w, http.StatusOK, resp.HTTPSuccess{
 		Message: "Succesfully update max customer",
 	})
+}
+
+func formatValidationError(err error, req interface{}) map[string][]string {
+	validationErrors := make(map[string][]string)
+	typ := reflect.TypeOf(req)
+
+	for _, e := range err.(validator.ValidationErrors) {
+		fieldName := e.Field()
+		jsonTag := getJSONTag(fieldName, typ)
+		var errorMsg string
+
+		switch e.Tag() {
+		case "required":
+			errorMsg = fmt.Sprintf("%s field is required.", jsonTag)
+		case "min":
+			errorMsg = fmt.Sprintf("%s field must be at least %s.", jsonTag, e.Param())
+		case "max":
+			errorMsg = fmt.Sprintf("%s field cannot be greater than %s.", jsonTag, e.Param())
+		case "email":
+			errorMsg = fmt.Sprintf("%s field must be a valid email address.", jsonTag)
+		case "len":
+			errorMsg = fmt.Sprintf("%s field must be exactly %s characters long.", jsonTag, e.Param())
+		case "lte":
+			errorMsg = fmt.Sprintf("%s field must be less than or equal to %s.", jsonTag, e.Param())
+		case "gte":
+			errorMsg = fmt.Sprintf("%s field must be greater than or equal to %s.", jsonTag, e.Param())
+		case "oneof":
+			errorMsg = fmt.Sprintf("%s field must be one of the following values: %s.", jsonTag, e.Param())
+		default:
+			errorMsg = fmt.Sprintf("%s field failed validation for rule '%s'.", jsonTag, e.Tag())
+		}
+
+		validationErrors[fieldName] = append(validationErrors[fieldName], errorMsg)
+	}
+	return validationErrors
+}
+
+func getJSONTag(fieldName string, typ reflect.Type) string {
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		if field.Name == fieldName {
+			jsonTag := field.Tag.Get("json")
+			if jsonTag != "" {
+				return jsonTag
+			}
+		}
+	}
+	return fieldName
 }

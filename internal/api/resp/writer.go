@@ -28,6 +28,11 @@ type HTTPError struct {
 	Message    string `json:"message"`
 }
 
+type ValidationErrorResponse struct {
+	StatusCode int                 `json:"status_code"`
+	Errors     map[string][]string `json:"errors"`
+}
+
 type Empty struct{}
 
 func WriteJSON(w http.ResponseWriter, code int, data interface{}) {

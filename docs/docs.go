@@ -24,105 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/config/max-customer": {
-            "put": {
-                "description": "Updates the maximum number of customers allowed in the configuration.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "configuration"
-                ],
-                "summary": "Update Maximum Customer Limit",
-                "parameters": [
-                    {
-                        "description": "Payload to update max customer",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entity.Config"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successfully updated max customer",
-                        "schema": {
-                            "$ref": "#/definitions/resp.HTTPSuccess"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/resp.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/rooms": {
-            "get": {
-                "description": "Retrieves the list of available customer rooms.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "rooms"
-                ],
-                "summary": "Get Customer Rooms",
-                "responses": {
-                    "200": {
-                        "description": "Successfully retrieved list of rooms",
-                        "schema": {
-                            "$ref": "#/definitions/response.RoomsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/resp.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/rooms/first": {
-            "get": {
-                "description": "Retrieves the ID of the first unserved customer room.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "rooms"
-                ],
-                "summary": "Get First Unserved Room ID",
-                "responses": {
-                    "200": {
-                        "description": "Successfully retrieved the first unserved room ID",
-                        "schema": {
-                            "$ref": "#/definitions/resp.HTTPSuccess"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/resp.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/webhook/caa": {
+        "/caa": {
             "post": {
                 "description": "Handles the CAA webhook request with data received from the request body.",
                 "consumes": [
@@ -168,7 +70,33 @@ const docTemplate = `{
                 }
             }
         },
-        "/webhook/mark-resolved": {
+        "/first_room": {
+            "get": {
+                "description": "Retrieves the ID of the first unserved customer room.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rooms"
+                ],
+                "summary": "Get First Unserved Room ID",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the first unserved room ID",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/mark_as_resolved": {
             "post": {
                 "description": "Marks the webhook as resolved by processing the data provided in the request body and assigning an agent.",
                 "consumes": [
@@ -213,14 +141,90 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/rooms": {
+            "get": {
+                "description": "Retrieves the list of available customer rooms.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rooms"
+                ],
+                "summary": "Get Customer Rooms",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved list of rooms",
+                        "schema": {
+                            "$ref": "#/definitions/response.RoomsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/update-max-customer": {
+            "post": {
+                "description": "Updates the maximum number of customers allowed in the configuration.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "configuration"
+                ],
+                "summary": "Update Maximum Customer Limit",
+                "parameters": [
+                    {
+                        "description": "Payload to update max customer",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Config"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated max customer",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/resp.HTTPError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "entity.Config": {
             "type": "object",
+            "required": [
+                "max_customer"
+            ],
             "properties": {
                 "max_customer": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 2
                 }
             }
         },

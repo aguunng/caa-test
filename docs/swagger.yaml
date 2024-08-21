@@ -3,7 +3,10 @@ definitions:
   entity.Config:
     properties:
       max_customer:
+        minimum: 2
         type: integer
+    required:
+    - max_customer
     type: object
   request.WebhookCaaRequest:
     properties:
@@ -193,71 +196,7 @@ info:
   title: Customer Service API
   version: "1.0"
 paths:
-  /config/max-customer:
-    put:
-      consumes:
-      - application/json
-      description: Updates the maximum number of customers allowed in the configuration.
-      parameters:
-      - description: Payload to update max customer
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/entity.Config'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully updated max customer
-          schema:
-            $ref: '#/definitions/resp.HTTPSuccess'
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/resp.HTTPError'
-      summary: Update Maximum Customer Limit
-      tags:
-      - configuration
-  /rooms:
-    get:
-      description: Retrieves the list of available customer rooms.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully retrieved list of rooms
-          schema:
-            $ref: '#/definitions/response.RoomsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/resp.HTTPError'
-      summary: Get Customer Rooms
-      tags:
-      - rooms
-  /rooms/first:
-    get:
-      description: Retrieves the ID of the first unserved customer room.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully retrieved the first unserved room ID
-          schema:
-            $ref: '#/definitions/resp.HTTPSuccess'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/resp.HTTPError'
-      summary: Get First Unserved Room ID
-      tags:
-      - rooms
-  /webhook/caa:
+  /caa:
     post:
       consumes:
       - application/json
@@ -288,7 +227,24 @@ paths:
       summary: Webhook CAA
       tags:
       - webhook
-  /webhook/mark-resolved:
+  /first_room:
+    get:
+      description: Retrieves the ID of the first unserved customer room.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved the first unserved room ID
+          schema:
+            $ref: '#/definitions/resp.HTTPSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+      summary: Get First Unserved Room ID
+      tags:
+      - rooms
+  /mark_as_resolved:
     post:
       consumes:
       - application/json
@@ -319,6 +275,53 @@ paths:
       summary: Mark Webhook as Resolved
       tags:
       - webhook
+  /rooms:
+    get:
+      description: Retrieves the list of available customer rooms.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved list of rooms
+          schema:
+            $ref: '#/definitions/response.RoomsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+      summary: Get Customer Rooms
+      tags:
+      - rooms
+  /update-max-customer:
+    post:
+      consumes:
+      - application/json
+      description: Updates the maximum number of customers allowed in the configuration.
+      parameters:
+      - description: Payload to update max customer
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Config'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated max customer
+          schema:
+            $ref: '#/definitions/resp.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resp.HTTPError'
+      summary: Update Maximum Customer Limit
+      tags:
+      - configuration
 securityDefinitions:
   BasicAuth:
     type: basic
