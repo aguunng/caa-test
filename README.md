@@ -9,6 +9,11 @@ Caa Test service. You can read detailed information about this service [here](/d
 To run this project, you will need to add the following environment variables to your `.env` file
 
 ```
+DATABASE_HOST=
+DATABASE_PORT=
+DATABASE_USER=
+DATABASE_PASSWORD=
+DATABASE_NAME=
 QISCUS_APP_ID=
 QISCUS_SECRET_KEY=
 QISCUS_OMNICHANNEL_URL=
