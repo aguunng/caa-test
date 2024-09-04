@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	neturl "net/url"
 	"reflect"
 
 	"github.com/go-playground/validator/v10"
@@ -49,7 +48,7 @@ func (h *httpHandler) WebhookCaa(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.svc.AssignAgent(ctx, &req); err != nil {
+	if err := h.svc.AssignAgentFromCaa(ctx, &req); err != nil {
 		log.Ctx(ctx).Error().Msgf("failed assign agent to room : %s", err.Error())
 		resp.WriteJSONFromError(w, err)
 		return
@@ -84,7 +83,7 @@ func (h *httpHandler) WebhookMarkResolved(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := h.svc.AssignAgent(ctx, nil); err != nil {
+	if err := h.svc.AssignAgentFromResolved(ctx); err != nil {
 		log.Ctx(ctx).Error().Msgf("failed assign agent to room : %s", err.Error())
 		resp.WriteJSONFromError(w, err)
 		return
@@ -92,51 +91,6 @@ func (h *httpHandler) WebhookMarkResolved(w http.ResponseWriter, r *http.Request
 
 	resp.WriteJSON(w, http.StatusOK, resp.HTTPSuccess{
 		Message: "Successfully send webhook",
-	})
-}
-
-// @Summary Get Customer Rooms
-// @Description Retrieves the list of available customer rooms.
-// @Tags rooms
-// @Produce  json
-// @Success 200  {object}  response.RoomsResponse  "Successfully retrieved list of rooms"
-// @Failure 500  {object}  resp.HTTPError  "Internal Server Error"
-// @Router /rooms [get]
-func (h *httpHandler) GetRooms(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	room, err := h.svc.GetCustomerRoom(ctx)
-	if err != nil {
-		log.Ctx(ctx).Error().Msgf("failed to get room: %s", err.Error())
-		resp.WriteJSONFromError(w, err)
-		return
-	}
-
-	resp.WriteJSON(w, http.StatusOK, room)
-}
-
-// @Summary Get First Unserved Room ID
-// @Description Retrieves the ID of the first unserved customer room.
-// @Tags rooms
-// @Produce  json
-// @Success 200  {object}  resp.HTTPSuccess  "Successfully retrieved the first unserved room ID"
-// @Failure 500  {object}  resp.HTTPError  "Internal Server Error"
-// @Router /first_room [get]
-func (h *httpHandler) FirstCustomerRoom(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	roomId, err := h.svc.FindFirstUnservedRoomId(ctx, neturl.Values{})
-	if err != nil {
-		log.Ctx(ctx).Error().Msgf("failed to get room: %s", err.Error())
-		resp.WriteJSONFromError(w, err)
-		return
-	}
-
-	resp.WriteJSON(w, http.StatusOK, resp.HTTPSuccess{
-		Message: "Succesfully get data first room",
-		Data: map[string]interface{}{
-			"room_id": roomId,
-		},
 	})
 }
 

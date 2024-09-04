@@ -2,7 +2,6 @@
 
 ### Modules
 
-- **[Resolver](resolver.md)** - Omnichannel room resolver
 - **[Room](room.md)** - All usecases related to Room
 
 ### Others

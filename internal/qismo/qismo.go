@@ -78,7 +78,7 @@ func (q *Qismo) Rooms(ctx context.Context, params neturl.Values) (*response.Room
 	return &response, nil
 }
 
-func (q *Qismo) AgentByRoomID(ctx context.Context, roomId string) (*response.AgentsRoomResponse, error) {
+func (q *Qismo) SearchCandidateAgent(ctx context.Context, roomId string) (*response.AgentsRoomResponse, error) {
 	params := neturl.Values{}
 	params.Set("room_id", roomId)
 

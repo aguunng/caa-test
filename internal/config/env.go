@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/caarlos0/env/v9"
@@ -47,8 +48,9 @@ func WriteConfig(config *AppConfig) error {
 }
 
 type Config struct {
-	App    App
-	Qiscus Qiscus
+	App      App
+	Qiscus   Qiscus
+	Database Database
 }
 
 type App struct {
@@ -63,6 +65,19 @@ type Qiscus struct {
 
 type Omnichannel struct {
 	URL string `env:"QISCUS_OMNICHANNEL_URL"`
+}
+
+type Database struct {
+	Host     string `env:"DATABASE_HOST"`
+	Port     int    `env:"DATABASE_PORT"`
+	User     string `env:"DATABASE_USER"`
+	Password string `env:"DATABASE_PASSWORD"`
+	Name     string `env:"DATABASE_NAME"`
+}
+
+func (d Database) DataSourceName() string {
+	return fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable",
+		d.User, d.Password, d.Host, d.Port, d.Name)
 }
 
 const configFile = "config.json"

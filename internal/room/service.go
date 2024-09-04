@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	neturl "net/url"
+	"sort"
 	"strconv"
 
 	"github.com/rs/zerolog/log"
@@ -17,18 +18,29 @@ type Omnichannel interface {
 	Rooms(ctx context.Context, params neturl.Values) (*response.RoomsResponse, error)
 	Agents(ctx context.Context) (*response.AgentsResponse, error)
 	AssignAgent(ctx context.Context, params neturl.Values) error
-	AgentByRoomID(ctx context.Context, roomID string) (*response.AgentsRoomResponse, error)
+	SearchCandidateAgent(ctx context.Context, roomID string) (*response.AgentsRoomResponse, error)
 	AgentDetail(ctx context.Context, agentId string) (*response.AgentDetailResponse, error)
 	AssignChannelToAgent(ctx context.Context, agentId string, channels request.AgentUpdatedRequest) error
 }
 
-type Service struct {
-	omni Omnichannel
+type Repository interface {
+	GetFirstUnassignedCustomerToday(ctx context.Context) (*entity.AgentAllocationQueue, error)
+	AssignAgentToCustomer(queue *entity.AgentAllocationQueue) error
+	GetRoomQueueByRoomId(roomId string) (*entity.AgentAllocationQueue, error)
+	AddToQueue(queue *entity.AgentAllocationQueue) error
 }
 
-func NewService(omni Omnichannel) *Service {
+type Service struct {
+	repo Repository
+	omni Omnichannel
+	cfg  *config.Config
+}
+
+func NewService(repo Repository, omni Omnichannel, cfg *config.Config) *Service {
 	return &Service{
+		repo: repo,
 		omni: omni,
+		cfg:  cfg,
 	}
 }
 
@@ -47,48 +59,107 @@ func (s *Service) GetCustomerRoom(ctx context.Context) (*response.RoomsResponse,
 	return result, nil
 }
 
-func (s *Service) AssignAgent(ctx context.Context, request *request.WebhookCaaRequest) error {
+func (s *Service) AssignAgentFromCaa(ctx context.Context, request *request.WebhookCaaRequest) error {
 	l := log.Ctx(ctx).
 		With().
-		Str("func", "room.Service.AssignAgent").
+		Str("func", "room.Service.AssignAgentFromCaa").
 		Logger()
 
-	params := neturl.Values{}
+	var roomId string
 
-	firstRoom, err := s.FindFirstUnservedRoomId(ctx, neturl.Values{})
-	if err != nil || firstRoom == nil {
-		l.Error().Msgf("unable get fisrt customer room : %s", err.Error())
-		return err
-	}
-	params.Set("room_id", firstRoom.ID)
-
-	agentId, err := s.AvailableAgentIds(ctx, firstRoom)
-	if err != nil {
-		l.Error().Msgf("unable get availabale agent : %s", err.Error())
-		return err
+	if request.AppID != s.cfg.Qiscus.AppID {
+		return &roomError{500, "failed assign with wrong app id"}
 	}
 
-	params.Set("agent_id", strconv.Itoa(agentId))
-
-	err = s.omni.AssignAgent(ctx, params)
+	err := s.AddToQueue(request.RoomID)
 	if err != nil {
-		l.Error().Msgf("unable assign agent : %s", err.Error())
+		l.Error().Msgf("failed saved customer to queue : %s", err.Error())
+	}
+
+	roomQueueDetail, _ := s.repo.GetRoomQueueByRoomId(request.RoomID)
+
+	if len(roomQueueDetail.AgentID) > 0 {
+		return &roomError{500, "current room id has been assigned to agent"}
+	}
+
+	unAssignedQueue, err := s.repo.GetFirstUnassignedCustomerToday(ctx)
+
+	// Check if queue is empty to set with room id from webhook
+	if err == nil {
+		roomId = unAssignedQueue.RoomID
+	} else {
+		roomId = request.RoomID
+	}
+
+	agentId := s.AvailableAgentId(ctx, roomId)
+
+	if agentId == 0 {
+		return fmt.Errorf("failed get available agent to assign with room id : %s", request.RoomID)
+	}
+
+	err = s.AssignAgent(ctx, strconv.Itoa(agentId), roomId)
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *Service) AvailableAgentIds(ctx context.Context, room *entity.Room) (int, error) {
+func (s *Service) AssignAgent(ctx context.Context, agentId string, roomId string) error {
+	params := neturl.Values{}
+
+	params.Set("agent_id", agentId)
+	params.Set("room_id", roomId)
+
+	err := s.omni.AssignAgent(ctx, params)
+	if err != nil {
+		return err
+	}
+
+	queueUpdate := &entity.AgentAllocationQueue{
+		RoomID:  roomId,
+		AgentID: agentId,
+	}
+
+	err = s.repo.AssignAgentToCustomer(queueUpdate)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) AssignAgentFromResolved(ctx context.Context) error {
+	unAssignedQueue, _ := s.repo.GetFirstUnassignedCustomerToday(ctx)
+
+	if unAssignedQueue == nil {
+		return &roomError{500, "empty queue customer for assign to agent"}
+	}
+
+	agentId := s.AvailableAgentId(ctx, unAssignedQueue.AgentID)
+
+	if agentId == 0 {
+		return fmt.Errorf("failed get available agent to assign with room id : %s", unAssignedQueue.RoomID)
+	}
+
+	err := s.AssignAgent(ctx, strconv.Itoa(agentId), unAssignedQueue.RoomID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) AvailableAgentId(ctx context.Context, roomId string) int {
 	l := log.Ctx(ctx).
 		With().
 		Str("func", "room.Service.AvailableAgentIds").
 		Logger()
 
-	agentsInRoom, err := s.omni.AgentByRoomID(ctx, room.ID)
+	candidateAgents, err := s.omni.SearchCandidateAgent(ctx, roomId)
 	if err != nil {
-		l.Error().Msgf("unable geting agent data in room %s : %s", room.ID, err.Error())
-		return 0, err
+		l.Error().Msgf("unable get candidate agent in room %s : %s", roomId, err.Error())
+		return 0
 	}
 
 	appConfig, err := config.ReadConfig()
@@ -97,125 +168,52 @@ func (s *Service) AvailableAgentIds(ctx context.Context, room *entity.Room) (int
 		appConfig.MaxCustomer = 2
 	}
 
-	agentInRoomID := FilterAgentRoomAvailable(agentsInRoom, appConfig)
-
-	if agentInRoomID > 0 {
-		return agentInRoomID, nil
-	}
-
-	agents, err := s.omni.Agents(ctx)
-	if err != nil {
-		l.Error().Msgf("unable get agent data : %s", err.Error())
-		return 0, err
-	}
-
-	agentId := FilterAgentsAvailableAssign(agents, appConfig)
+	agentId := FilterAgentRoomAvailable(candidateAgents, appConfig)
 
 	if agentId == 0 {
-		msg := fmt.Sprintf("Agent not available with handle current %d max customer", appConfig.MaxCustomer)
-		l.Error().Msg(msg)
-		return 0, &roomError{agentNotFound, msg}
+		log.Ctx(ctx).Error().Msgf("failed get available agent with config max customer : %d", appConfig.MaxCustomer)
 	}
 
-	agentDetail, err := s.omni.AgentDetail(ctx, strconv.Itoa(agentId))
-	if err != nil {
-		l.Error().Msgf("unable get agent detail : %s", err.Error())
-		return 0, err
-	}
-
-	newChannel := response.UserChannel{
-		ID:   room.ChannelID,
-		Name: room.Source,
-	}
-
-	agentChannels := append(agentDetail.Data.Agent.UserChannels, newChannel)
-
-	var mappedChannels []request.UserChannel
-	for _, uc := range agentChannels {
-		mappedChannels = append(mappedChannels, request.UserChannel{
-			ChannelID: uc.ID,
-			Source:    uc.Name,
-		})
-	}
-	var userRoles []string
-	for _, uc := range agentDetail.Data.Agent.UserRoles {
-		userRoles = append(userRoles, strconv.Itoa(uc.ID))
-	}
-
-	if userRoles == nil {
-		userRoles = []string{}
-	}
-
-	request := request.AgentUpdatedRequest{
-		Channels:  mappedChannels,
-		Name:      agentDetail.Data.Agent.Name,
-		Email:     agentDetail.Data.Agent.Email,
-		UserRoles: userRoles,
-	}
-
-	err = s.omni.AssignChannelToAgent(ctx, strconv.Itoa(agentDetail.Data.Agent.ID), request)
-
-	if err != nil {
-		l.Error().Msgf("unable assign agent %d to channels %d : %s", agentDetail.Data.Agent.ID, room.ChannelID, err.Error())
-		return 0, err
-	}
-
-	return agentId, nil
+	return agentId
 }
 
-func (s *Service) FindFirstUnservedRoomId(ctx context.Context, params neturl.Values) (*entity.Room, error) {
-	l := log.Ctx(ctx).
-		With().
-		Str("func", "room.Service.FindFirstUnservedRoomId").
-		Logger()
-
-	params.Set("serve_status", "unserved")
-
-	response, err := s.omni.Rooms(ctx, params)
-	if err != nil {
-		l.Error().Msgf("unable getting room data: %s", err.Error())
-		return nil, err
+func (s *Service) AddToQueue(roomId string) error {
+	queue := &entity.AgentAllocationQueue{
+		RoomID: roomId,
 	}
+	err := s.repo.AddToQueue(queue)
 
-	if len(response.Data.CustomerRooms) >= 50 {
-		params.Set("cursor_after", response.Meta.CursorAfter)
-		return s.FindFirstUnservedRoomId(ctx, params)
-	}
-
-	for i := len(response.Data.CustomerRooms) - 1; i >= 0; i-- {
-		room := response.Data.CustomerRooms[i]
-		// Handle channel deleted source
-		if room.Source != "uFppL" {
-			return &entity.Room{
-				ID:        room.RoomID,
-				ChannelID: room.ChannelID,
-				Source:    room.Source,
-			}, nil
-		}
-	}
-
-	return nil, nil
+	return err
 }
 
 func FilterAgentRoomAvailable(agents *response.AgentsRoomResponse, appConfig *config.AppConfig) int {
 	// Filter available agent and handle customer < 2
-	var firstAgentId int
+	var filteredAgents []struct {
+		ID                   int
+		CurrentCustomerCount int
+	}
+
 	for _, item := range agents.Data.Agents {
 		if item.IsAvailable && item.CurrentCustomerCount < appConfig.MaxCustomer {
-			firstAgentId = item.ID
+			filteredAgents = append(filteredAgents, struct {
+				ID                   int
+				CurrentCustomerCount int
+			}{
+				ID:                   item.ID,
+				CurrentCustomerCount: item.CurrentCustomerCount,
+			})
 		}
 	}
 
-	return firstAgentId
-}
-func FilterAgentsAvailableAssign(agents *response.AgentsResponse, appConfig *config.AppConfig) int {
-	// Filter available agent and handle customer < 2 and not supervisor
-	var firstAgentId int
-	for _, item := range agents.Data.Agents.Data {
-		if item.IsAvailable && item.CurrentCustomerCount < appConfig.MaxCustomer && !item.IsSupervisor {
-			firstAgentId = item.ID
-		}
+	// Sort filtered agents by CurrentCustomerCount in ascending order
+	sort.Slice(filteredAgents, func(i, j int) bool {
+		return filteredAgents[i].CurrentCustomerCount < filteredAgents[j].CurrentCustomerCount
+	})
+
+	// Return the ID of the first agent in the sorted list
+	if len(filteredAgents) > 0 {
+		return filteredAgents[0].ID
 	}
 
-	return firstAgentId
+	return 0
 }

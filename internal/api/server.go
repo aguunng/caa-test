@@ -4,6 +4,7 @@ import (
 	"caa-test/internal/api/resp"
 	"caa-test/internal/client"
 	"caa-test/internal/config"
+	"caa-test/internal/postgres"
 	"caa-test/internal/qismo"
 	"caa-test/internal/room"
 	"context"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	_ "caa-test/docs"
+
 	"github.com/rs/zerolog/log"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
@@ -22,10 +24,14 @@ import (
 func NewServer() *Server {
 	cfg := config.Load()
 
+	db := postgres.NewGORM(cfg.Database)
+	postgres.Migrate(db)
+
 	client := client.New()
 	qismo := qismo.New(client, cfg.Qiscus.Omnichannel.URL, cfg.Qiscus.AppID, cfg.Qiscus.SecretKey)
 
-	roomSvc := room.NewService(qismo)
+	roomRepo := room.NewRepository(db)
+	roomSvc := room.NewService(roomRepo, qismo, cfg)
 	roomHandler := room.NewHttpHandler(roomSvc)
 
 	r := http.NewServeMux()
@@ -46,8 +52,6 @@ func NewServer() *Server {
 	r.Handle("GET /swagger/", httpSwagger.Handler())
 	r.Handle("POST /api/v1/caa", http.HandlerFunc(roomHandler.WebhookCaa))
 	r.Handle("POST /api/v1/mark_as_resolved", http.HandlerFunc(roomHandler.WebhookMarkResolved))
-	r.Handle("GET /api/v1/rooms", http.HandlerFunc(roomHandler.GetRooms))
-	r.Handle("GET /api/v1/first_room", http.HandlerFunc(roomHandler.FirstCustomerRoom))
 	r.Handle("POST /api/v1/update-max-customer", http.HandlerFunc(roomHandler.UpdateMaxCustomerHandler))
 
 	return &Server{router: r}
