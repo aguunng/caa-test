@@ -167,6 +167,15 @@ func (s *Service) AssignAgent(ctx context.Context, agentId string, roomId string
 				return &roomError{500, err.Error()}
 			}
 		}
+
+		queue := &entity.AgentAllocationQueue{
+			RoomID:     roomId,
+			UpdatedAt:  time.Now(),
+		}
+		errDb := s.repo.UpdateQueue(queue)
+		if errDb != nil {
+			return errDb
+		}
 		return err
 	}
 
