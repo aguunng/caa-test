@@ -22,7 +22,8 @@ sequenceDiagram
     S->>O: Assign agent in room
     O-->>S: Succesfully assign agent in room
     S->>D: Updated queue
-     D-->>S: Succesfully updated queue
+    D-->>S: Succesfully updated queue
+    S-->>O: Succesfully send webhook
 ```
 ### Assigned Agent with Webhook Mark As Resolved
 Here is a sequence process for assigned flow agent when get webhook resolved:
@@ -42,7 +43,8 @@ sequenceDiagram
     S->>O: Assign agent in room
     O-->>S: Succesfully assign agent in room
     S->>D: Updated queue
-     D-->>S: Succesfully updated queue
+    D-->>S: Succesfully updated queue
+    S-->>O: Succesfully send webhook
 ```
 
 ### Assigned Agent with Cronjob
