@@ -1,15 +1,21 @@
 package room
 
 import (
+	"caa-test/internal/client"
 	"caa-test/internal/config"
 	"caa-test/internal/entity"
 	"caa-test/internal/qismo/request"
 	"caa-test/internal/qismo/response"
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	neturl "net/url"
 	"sort"
 	"strconv"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -28,6 +34,7 @@ type Repository interface {
 	AssignAgentToCustomer(queue *entity.AgentAllocationQueue) error
 	GetRoomQueueByRoomId(roomId string) (*entity.AgentAllocationQueue, error)
 	AddToQueue(queue *entity.AgentAllocationQueue) error
+	UpdateQueue(queue *entity.AgentAllocationQueue) error
 }
 
 type Service struct {
@@ -78,6 +85,10 @@ func (s *Service) AssignAgentFromCaa(ctx context.Context, request *request.Webho
 
 	roomQueueDetail, _ := s.repo.GetRoomQueueByRoomId(request.RoomID)
 
+	if roomQueueDetail.IsResolved {
+		return &roomError{500, "room already resolved"}
+	}
+
 	if len(roomQueueDetail.AgentID) > 0 {
 		return &roomError{500, "current room id has been assigned to agent"}
 	}
@@ -91,13 +102,40 @@ func (s *Service) AssignAgentFromCaa(ctx context.Context, request *request.Webho
 		roomId = request.RoomID
 	}
 
+	var mu sync.Mutex
+	mu.Lock()
 	agentId := s.AvailableAgentId(ctx, roomId)
+	mu.Unlock()
 
 	if agentId == 0 {
 		return fmt.Errorf("failed get available agent to assign with room id : %s", request.RoomID)
 	}
 
 	err = s.AssignAgent(ctx, strconv.Itoa(agentId), roomId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) AssignAgentFromWebhook(ctx context.Context, request *request.WebhookMarkResolvedRequest) error {
+	l := log.Ctx(ctx).
+		With().
+		Str("func", "room.Service.AssignAgentFromWebhook").
+		Logger()
+
+	queue := &entity.AgentAllocationQueue{
+		RoomID:     request.Service.RoomID,
+		IsResolved: true,
+	}
+
+	err := s.repo.UpdateQueue(queue)
+	if err != nil {
+		l.Error().Msgf("failed update resolved queue : %s", err.Error())
+	}
+
+	err = s.AssignAgentEvent(ctx)
 	if err != nil {
 		return err
 	}
@@ -113,6 +151,22 @@ func (s *Service) AssignAgent(ctx context.Context, agentId string, roomId string
 
 	err := s.omni.AssignAgent(ctx, params)
 	if err != nil {
+		var cErr *client.Error
+		if errors.As(err, &cErr) {
+			if cErr.StatusCode == http.StatusBadRequest && strings.Contains(err.Error(), "room already resolved") {
+				queue := &entity.AgentAllocationQueue{
+					RoomID:     roomId,
+					IsResolved: true,
+					UpdatedAt:  time.Now(),
+				}
+				errDb := s.repo.UpdateQueue(queue)
+				if errDb != nil {
+					return errDb
+				}
+
+				return &roomError{500, err.Error()}
+			}
+		}
 		return err
 	}
 
@@ -129,14 +183,14 @@ func (s *Service) AssignAgent(ctx context.Context, agentId string, roomId string
 	return nil
 }
 
-func (s *Service) AssignAgentFromResolved(ctx context.Context) error {
+func (s *Service) AssignAgentEvent(ctx context.Context) error {
 	unAssignedQueue, _ := s.repo.GetFirstUnassignedCustomerToday(ctx)
 
 	if unAssignedQueue == nil {
 		return &roomError{500, "empty queue customer for assign to agent"}
 	}
 
-	agentId := s.AvailableAgentId(ctx, unAssignedQueue.AgentID)
+	agentId := s.AvailableAgentId(ctx, unAssignedQueue.RoomID)
 
 	if agentId == 0 {
 		return fmt.Errorf("failed get available agent to assign with room id : %s", unAssignedQueue.RoomID)
@@ -179,7 +233,8 @@ func (s *Service) AvailableAgentId(ctx context.Context, roomId string) int {
 
 func (s *Service) AddToQueue(roomId string) error {
 	queue := &entity.AgentAllocationQueue{
-		RoomID: roomId,
+		RoomID:    roomId,
+		UpdatedAt: time.Now(),
 	}
 	err := s.repo.AddToQueue(queue)
 

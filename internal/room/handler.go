@@ -83,7 +83,7 @@ func (h *httpHandler) WebhookMarkResolved(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := h.svc.AssignAgentFromResolved(ctx); err != nil {
+	if err := h.svc.AssignAgentFromWebhook(ctx, &req); err != nil {
 		log.Ctx(ctx).Error().Msgf("failed assign agent to room : %s", err.Error())
 		resp.WriteJSONFromError(w, err)
 		return

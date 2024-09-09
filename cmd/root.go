@@ -14,7 +14,7 @@ func Execute() {
 		},
 	}
 
-	command.AddCommand(apiCmd())
+	command.AddCommand(apiCmd(), cronCmd())
 
 	if err := command.Execute(); err != nil {
 		log.Fatal().Msgf("failed run app: %s", err.Error())

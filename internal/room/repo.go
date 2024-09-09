@@ -22,15 +22,12 @@ func NewRepository(db *gorm.DB) *repo {
 
 func (r *repo) GetFirstUnassignedCustomerToday(ctx context.Context) (*entity.AgentAllocationQueue, error) {
 	var queue entity.AgentAllocationQueue
-	if r.db == nil {
-		return nil, fmt.Errorf("database connection is nil")
-	}
 	today := time.Now().Format("2006-01-02")
 
 	err := r.db.
 		WithContext(ctx).
-		Where("agent_id IS NULL AND DATE(created_at) = ?", today).
-		Order("created_at ASC").
+		Where("agent_id = ? AND is_resolved=? AND DATE(updated_at) = ?", "", false, today).
+		Order("updated_at ASC").
 		First(&queue).Error
 
 	if err != nil {
@@ -58,20 +55,26 @@ func (r *repo) AddToQueue(queue *entity.AgentAllocationQueue) error {
 	return r.db.Create(queue).Error
 }
 
+func (r *repo) UpdateQueue(queue *entity.AgentAllocationQueue) error {
+	return r.db.Model(&entity.AgentAllocationQueue{}).
+		Where("room_id = ?", queue.RoomID).
+		Updates(entity.AgentAllocationQueue{
+			UpdatedAt:  queue.UpdatedAt,
+			IsResolved: queue.IsResolved,
+		}).Error
+}
+
 func (r *repo) GetRoomQueueByRoomId(roomId string) (*entity.AgentAllocationQueue, error) {
-    var queue entity.AgentAllocationQueue
-    
+	var queue entity.AgentAllocationQueue
+
 	err := r.db.
 		Where("room_id = ?", roomId).
 		First(&queue).Error
 
-	// Tangani error dari query
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// Kembalikan nil jika tidak ada record ditemukan
 			return nil, nil
 		}
-		// Kembalikan error lainnya
 		return nil, err
 	}
 
