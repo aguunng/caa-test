@@ -4,6 +4,7 @@ import (
 	"caa-test/internal/api/resp"
 	"caa-test/internal/client"
 	"caa-test/internal/config"
+	"caa-test/internal/health"
 	"caa-test/internal/postgres"
 	"caa-test/internal/qismo"
 	"caa-test/internal/room"
@@ -30,9 +31,15 @@ func NewServer() *Server {
 	client := client.New()
 	qismo := qismo.New(client, cfg.Qiscus.Omnichannel.URL, cfg.Qiscus.AppID, cfg.Qiscus.SecretKey)
 
+	// CAA
 	roomRepo := room.NewRepository(db)
 	roomSvc := room.NewService(roomRepo, qismo, cfg)
 	roomHandler := room.NewHttpHandler(roomSvc)
+
+	// Health
+	healthRepo := health.NewRepository(db)
+	healthSvc := health.NewService(healthRepo)
+	healthHandler := health.NewHttpHandler(healthSvc)
 
 	r := http.NewServeMux()
 	r.Handle("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +56,7 @@ func NewServer() *Server {
 		})
 	}))
 
+	r.Handle("GET /health", http.HandlerFunc(healthHandler.Check))
 	r.Handle("GET /swagger/", httpSwagger.Handler())
 	r.Handle("POST /api/v1/caa", http.HandlerFunc(roomHandler.WebhookCaa))
 	r.Handle("POST /api/v1/mark_as_resolved", http.HandlerFunc(roomHandler.WebhookMarkResolved))
